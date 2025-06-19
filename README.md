@@ -39,4 +39,20 @@
 - VSCode에서 프로젝트 폴더를 작업 공간으로 열기
 - `CMake: Configure`에서 `Debug` 빌드 환경 선택
 
+## 4. 추가 Peripheral 설정
+
+### 4.1. Connectivity
+
+- `SPII1` - `Mode` - `Full-Duplex Master`
+  - `Parameter Settings` - `Clock Parameters` - `Prescaler` - `32`
+- `USART2` - `Mode` - `Asynchronous`
+
+### 4.2. Middleware and Software Packs
+
+- `FATFS` - `User-defined`
+
+## 4.3. System Core
+
+- `GPIO` - `PB0` - `GPIO_OUTPUT`
+
 ---
