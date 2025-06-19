@@ -51,8 +51,18 @@
 
 - `FATFS` - `User-defined`
 
-## 4.3. System Core
+### 4.3. System Core
 
 - `GPIO` - `PB0` - `GPIO_OUTPUT`
+
+## 5. Wiring Diagram
+
+![Wiring Diagram](./diagram/wiring.drawio.svg)
+
+## 6.. References
+
+- [ControllersTech. "SD card using SPI in STM32". Last Modified Unknown. Accessed June 20, 2025.](https://controllerstech.com/sd-card-using-spi-in-stm32/)
+
+> ControllersTech의 코드 중 `FR_NO_FILESYSTEM ` 해결을 위해 구버전 소스 코드를 적용함
 
 ---
