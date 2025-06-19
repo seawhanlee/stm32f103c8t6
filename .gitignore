@@ -1,0 +1,8 @@
+.vscode
+CMakeCache.txt
+CMakeFiles/
+build.ninja
+build/
+cmake/stm32cubemx/cmake_install.cmake
+cmake_install.cmake
+compile_commands.json
