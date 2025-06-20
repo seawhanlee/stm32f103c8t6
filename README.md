@@ -14,29 +14,24 @@
 - [Ninja](https://github.com/ninja-build/ninja/releases)
   - 시스템 환경 변수로 등록되어 있어야 함
 
-## 2. 프로젝트 기본 설정
+## 2. 추가 Peripheral 설정
 
-### 2.1. Pinout & Configuration
+### 2.1. Timers
 
-- `SYS` - `Debug` - `Serial Wire`
-- `RCC` - `High Speed Clock (HSE)` - `Crystal/Ceramic Resonator`
+- `TIM1` - `Clock Source` - `Internal Clock`
+  - `Channel 1` - `PWM Generation CH1`
+  - `Channel 2` - `PWM Generation CH2`
+  - `Channel 3` - `PWM Generation CH3`
+  - `Channel 4` - `PWM Generation CH4`
+  - `Parameter Settings` - `Prescaler` - `720-1`
+  - `Parameter Settings` - `Counter Period` - `1000-1`
 
-### 2.2. Clock Configuration
+## 3. Wiring Diagram
 
-- `PLL Source Mux` - `HSE`
-- `System Clock Mux` - `PLLCLK`
-- `HCLK (MHz)` - `72`
+![Wiring Diagram](./diagram/wiring.drawio.svg)
 
-## 2.3. Project Manager
+## 4. Reference
 
-- `Project` - `Toolchain/IDE` - `CMake`
-- `Code Genreator` - `Generated files` - `Generate peripheral initialization as a pair of '.c/.h/' files per peripheral`
-
-## 3. Import 절차
-
-- VSCode의 `STM32Cube for Visual Studio Code` 확장 메뉴에서 Import Cmake project. 프로젝트 폴더를 선택하기
-  - `.vscode` 경로에 VSCode `launch.json`, `tasks.json` 파일 등을 생성하는 역할을 함
-- VSCode에서 프로젝트 폴더를 작업 공간으로 열기
-- `CMake: Configure`에서 `Debug` 빌드 환경 선택
+- [서강대학교 청년광장. "06_[STM32] 타이머를 이용하여 PWM 출력하기". Last Modified Aug 30, 2019. Accessed June 20, 2025.](https://sc.sogang.ac.kr/bbs/bbsview.do?pkid=51929&bbsid=3857&wslID=mecha&searchField=&searchValue=)
 
 ---
