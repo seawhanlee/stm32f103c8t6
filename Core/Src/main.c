@@ -23,7 +23,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "string.h"
+#include "stdio.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +45,10 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+uint8_t rxBuffer[1];  // Single character buffer
+uint8_t messageBuffer[MAX_MESSAGE_SIZE];  // Complete message buffer
+uint16_t messageIndex = 0;  // Current position in message
+uint8_t messageComplete = 0;  // Flag indicating complete message
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -90,6 +94,13 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
+  // Start UART reception in interrupt mode (single character)
+  HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
+  
+  // Send welcome message
+  char welcomeMsg[] = "UART2 Interrupt Ready!\r\n";
+  HAL_UART_Transmit(&huart2, (uint8_t*)welcomeMsg, strlen(welcomeMsg), HAL_MAX_DELAY);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -99,6 +110,24 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    
+    // Check if complete message received
+    if (messageComplete)
+    {
+      // Simple exmaple for processing a message by case
+      if (strcmp((char*)messageBuffer, "hello") == 0)
+      {
+        HAL_UART_Transmit(&huart2, (uint8_t*)"there\r\n", 7, HAL_MAX_DELAY);
+      }
+      
+      // Clear the message buffer after processing
+      memset(messageBuffer, 0, MAX_MESSAGE_SIZE);
+      
+      // Reset flag
+      messageComplete = 0;
+    }
+    
+    HAL_Delay(10);
   }
   /* USER CODE END 3 */
 }

@@ -21,7 +21,10 @@
 #include "usart.h"
 
 /* USER CODE BEGIN 0 */
-
+extern uint8_t rxBuffer[1];
+extern uint8_t messageBuffer[MAX_MESSAGE_SIZE];
+extern uint16_t messageIndex;
+extern uint8_t messageComplete;
 /* USER CODE END 0 */
 
 UART_HandleTypeDef huart2;
@@ -39,7 +42,7 @@ void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -118,5 +121,51 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* uartHandle)
 }
 
 /* USER CODE BEGIN 1 */
+
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART2)
+  {
+    uint8_t receivedChar = rxBuffer[0];
+    
+    // Check for end of message (CR, LF, or both)
+    if (receivedChar == '\r' || receivedChar == '\n')
+    {
+      if (messageIndex > 0)  // Only process if we have data
+      {
+        messageBuffer[messageIndex] = '\0';  // Null terminate
+        messageComplete = 1;  // Signal main loop
+        
+        // Echo the complete message
+        char response[100];
+        snprintf(response, sizeof(response), "received: %s\r\n", messageBuffer);
+        HAL_UART_Transmit(&huart2, (uint8_t*)response, strlen(response), HAL_MAX_DELAY);
+        
+        // Reset for next message
+        messageIndex = 0;
+      }
+    }
+    else if (messageIndex < MAX_MESSAGE_SIZE - 1)  // Prevent buffer overflow
+    {
+      messageBuffer[messageIndex++] = receivedChar;
+    }
+    
+    // Restart reception for next character
+    HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
+  }
+}
+
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
+  if (huart->Instance == USART2)
+  {
+    // Reset message state on error
+    messageIndex = 0;
+    messageComplete = 0;
+    
+    // Restart reception
+    HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
+  }
+}
 
 /* USER CODE END 1 */
