@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "mpu6050.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -44,7 +44,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-
+MPU6050_t MPU6050;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -89,7 +89,7 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
-
+  while (MPU6050_Init(&hi2c2) == 1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -97,6 +97,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+    MPU6050_Read_All(&hi2c2, &MPU6050);
+    HAL_Delay (10);
+    // You can access the data like this:
+    // KalmanAngleX
+    // KalmanAngleY
 
     /* USER CODE BEGIN 3 */
   }
