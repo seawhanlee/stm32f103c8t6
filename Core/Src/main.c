@@ -89,7 +89,7 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -97,7 +97,15 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    // Increase the speed of the motor every 10ms by 0.1% starting from 0%
+    for(uint16_t i=0; i<1000; i++){
+      htim1.Instance->CCR1 = i;
+      HAL_Delay(10);
+      if (i == 999){
+        // On max speed, wait for 5 seconds
+        HAL_Delay(5000);
+      }
+    }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
