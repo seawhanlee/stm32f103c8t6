@@ -1,6 +1,8 @@
-# STM32F103C8T6 Code Snippets
+# STM32F103C8T6 Code Snippets: Attitude Heading Reference System
 
 이 저장소는 STM32F103C8T6 마이크로컨트롤러를 위한 코드 스니펫을 제공합니다. 개발 보드는 STM32F103C8T6 "Blue Pill" 보드를 사용합니다.
+
+본 브린채는 `GY-521` 가속도계 - 자이로스코프 센서를 사용하여 자세 측정을 구현한 예제 코드를 제공합니다.
 
 ## 1. 코드 생성 및 개발 Toolchain
 
@@ -14,29 +16,25 @@
 - [Ninja](https://github.com/ninja-build/ninja/releases)
   - 시스템 환경 변수로 등록되어 있어야 함
 
-## 2. 프로젝트 기본 설정
+## 2. 추가 Peripheral 설정
 
-### 2.1. Pinout & Configuration
+### 2.1. Connectivity
 
-- `SYS` - `Debug` - `Serial Wire`
-- `RCC` - `High Speed Clock (HSE)` - `Crystal/Ceramic Resonator`
+- `Connectivity` - `I2C2` - `I2C` - `I2C`
+  - `Parameter Settings` - `I2C Speed Mode` - `Fast Mode`
 
-### 2.2. Clock Configuration
+### 2.2. GPIO
 
-- `PLL Source Mux` - `HSE`
-- `System Clock Mux` - `PLLCLK`
-- `HCLK (MHz)` - `72`
+- `PB1` - `GPIO_INPUT`
 
-## 2.3. Project Manager
+> 본 예제에서는 `PB1` 핀을 인터럽트용으로 설정하나, 실제로 사용하지는 않음
 
-- `Project` - `Toolchain/IDE` - `CMake`
-- `Code Genreator` - `Generated files` - `Generate peripheral initialization as a pair of '.c/.h/' files per peripheral`
+## 3. Wiring Diagram
 
-## 3. Import 절차
+![Wiring Diagram](./diagram/wiring.drawio.svg)
 
-- VSCode의 `STM32Cube for Visual Studio Code` 확장 메뉴에서 Import Cmake project. 프로젝트 폴더를 선택하기
-  - `.vscode` 경로에 VSCode `launch.json`, `tasks.json` 파일 등을 생성하는 역할을 함
-- VSCode에서 프로젝트 폴더를 작업 공간으로 열기
-- `CMake: Configure`에서 `Debug` 빌드 환경 선택
+## 4. References
+
+- [GitHub. "leech001/MPU6050". Last Modified Jun 5, 2021. Accessed: 2025-06-20.](https://github.com/leech001/MPU6050)
 
 ---
