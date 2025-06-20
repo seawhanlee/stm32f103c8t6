@@ -100,8 +100,8 @@ int main(void)
     MPU6050_Read_All(&hi2c2, &MPU6050);
     HAL_Delay (10);
     // You can access the data like this:
-    // KalmanAngleX
-    // KalmanAngleY
+    // MPU6050.KalmanAngleX
+    // MPU6050.KalmanAngleY
 
     /* USER CODE BEGIN 3 */
   }
