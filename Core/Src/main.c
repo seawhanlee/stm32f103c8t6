@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -25,6 +26,7 @@
 /* USER CODE BEGIN Includes */
 #include "string.h"
 #include "stdio.h"
+#include "mpu6050.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,6 +51,8 @@ uint8_t rxBuffer[1];  // Single character buffer
 uint8_t messageBuffer[MAX_MESSAGE_SIZE];  // Complete message buffer
 uint16_t messageIndex = 0;  // Current position in message
 uint8_t messageComplete = 0;  // Flag indicating complete message
+MPU6050_t MPU6050;
+double current_xvalue = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,10 +96,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
   // Start UART reception in interrupt mode (single character)
   HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
+  while (MPU6050_Init(&hi2c2) == 1);
   
   // Send welcome message
   char welcomeMsg[] = "UART2 Interrupt Ready!\r\n";
@@ -107,25 +113,30 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    MPU6050_Read_All(&hi2c2, &MPU6050);
+    current_xvalue = MPU6050.KalmanAngleX;
+    char xvalueStr[32];
+    snprintf(xvalueStr, sizeof(xvalueStr), "X: %.2f\r\n", current_xvalue);
+    HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
     
     // Check if complete message received
-    if (messageComplete)
-    {
-      // Simple exmaple for processing a message by case
-      if (strcmp((char*)messageBuffer, "hello") == 0)
-      {
-        HAL_UART_Transmit(&huart2, (uint8_t*)"there\r\n", 7, HAL_MAX_DELAY);
-      }
+    // if (messageComplete)
+    // {
+    //   // Simple exmaple for processing a message by case
+    //   if (strcmp((char*)messageBuffer, "hello") == 0)
+    //   {
+    //     HAL_UART_Transmit(&huart2, (uint8_t*)"there\r\n", 7, HAL_MAX_DELAY);
+    //   }
       
-      // Clear the message buffer after processing
-      memset(messageBuffer, 0, MAX_MESSAGE_SIZE);
+    //   // Clear the message buffer after processing
+    //   memset(messageBuffer, 0, MAX_MESSAGE_SIZE);
       
-      // Reset flag
-      messageComplete = 0;
-    }
+    //   // Reset flag
+    //   messageComplete = 0;
+    // }
     
     HAL_Delay(10);
   }
