@@ -102,6 +102,10 @@ int main(void)
   MX_I2C2_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_2);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_3);
+  HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4);
 
   // Start UART reception in interrupt mode (single character)
   HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
@@ -117,37 +121,40 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    MPU6050_Read_All(&hi2c2, &MPU6050);
-    current_xvalue = MPU6050.KalmanAngleX;
-    current_yvalue = MPU6050.KalmanAngleY;
-    char xvalueStr[32];
-    int current_xvalInt = (int)current_xvalue;
-    int current_yvalInt = (int)current_yvalue + 90;
-    int current_xvalFrac = (int)(fabs(current_xvalue - current_xvalInt) * 100);
-    int current_yvalFrac = (int)(fabs(current_yvalue - current_yvalInt) * 100);
-    snprintf(xvalueStr, sizeof(xvalueStr), "X: %d.%02d, Y: %d.%02d \r\n", current_xvalInt, current_xvalFrac, current_yvalInt, current_yvalFrac);
-    HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
+    // MPU6050_Read_All(&hi2c2, &MPU6050);
+    // current_xvalue = MPU6050.KalmanAngleX;
+    // current_yvalue = MPU6050.KalmanAngleY + 90;
+
+    // char xvalueStr[64];
+    // int current_xvalInt = (int)current_xvalue;
+    // int current_yvalInt = (int)current_yvalue;
+    // int current_xvalFrac = (int)(fabs(current_xvalue - current_xvalInt) * 100);
+    // int current_yvalFrac = (int)(fabs(current_yvalue - current_yvalInt) * 100);
+
+    // snprintf(xvalueStr, sizeof(xvalueStr), "X: %d.%02d, Y: %d.%02d \r\n", current_xvalInt, current_xvalFrac, current_yvalInt, current_yvalFrac);
+    // HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
+    // HAL_Delay(50);
+    for(uint16_t i = 0; i < 500; i++) {
+        htim1.Instance->CCR1 = i;
+        htim1.Instance->CCR2 = i;
+        htim1.Instance->CCR3 = i;
+        htim1.Instance->CCR4 = i;
+        HAL_Delay(10);
+    }
+    // 최대 속도 5초 유지
+    HAL_Delay(5000);
+
+    // 감속
+    for(int16_t i = 499; i >= 0; i--) {
+        htim1.Instance->CCR1 = i;
+        htim1.Instance->CCR2 = i;
+        htim1.Instance->CCR3 = i;
+        htim1.Instance->CCR4 = i;
+        HAL_Delay(10);
+    }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    
-    // Check if complete message received
-    // if (messageComplete)
-    // {
-    //   // Simple exmaple for processing a message by case
-    //   if (strcmp((char*)messageBuffer, "hello") == 0)
-    //   {
-    //     HAL_UART_Transmit(&huart2, (uint8_t*)"there\r\n", 7, HAL_MAX_DELAY);
-    //   }
-      
-    //   // Clear the message buffer after processing
-    //   memset(messageBuffer, 0, MAX_MESSAGE_SIZE);
-      
-    //   // Reset flag
-    //   messageComplete = 0;
-    // }
-    
-    HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
