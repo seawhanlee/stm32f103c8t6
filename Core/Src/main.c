@@ -146,7 +146,7 @@ int main(void)
 
 
     // // 1) scale-factor: current_*value ∈ [-90,90] → offset ∈ [-499, +499]
-    // float scale  = 999.0f / 180.0f;
+    // float scale  = 999.0f / 180.0f * 0.5f;
     // float off_x  = current_xvalue * scale;   // +: 오른쪽, -: 왼쪽
     // float off_y  = current_yvalue * scale;   // +: 전진,   -: 후진
     // float center = 999.0f / 2.0f;             // 중립 속도
