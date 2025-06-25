@@ -145,30 +145,30 @@ int main(void)
     HAL_UART_Transmit(&huart2, (char*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
 
 
-    // 1) scale-factor: current_*value ∈ [-90,90] → offset ∈ [-499, +499]
-    float scale  = 999.0f / 180.0f;
-    float off_x  = current_xvalue * scale;   // +: 오른쪽, -: 왼쪽
-    float off_y  = current_yvalue * scale;   // +: 전진,   -: 후진
-    float center = 999.0f / 2.0f;             // 중립 속도
+    // // 1) scale-factor: current_*value ∈ [-90,90] → offset ∈ [-499, +499]
+    // float scale  = 999.0f / 180.0f;
+    // float off_x  = current_xvalue * scale;   // +: 오른쪽, -: 왼쪽
+    // float off_y  = current_yvalue * scale;   // +: 전진,   -: 후진
+    // float center = 999.0f / 2.0f;             // 중립 속도
 
-    // 2) 45° 설치된 모터 믹싱 (M1→+x+ y, M2→-x+ y, M3→-x- y, M4→+x- y)
-    int pwm1 = (int)(center + off_x + off_y);  // CCR1 → M1
-    int pwm2 = (int)(center - off_x + off_y);  // CCR2 → M2
-    int pwm3 = (int)(center - off_x - off_y);  // CCR3 → M3
-    int pwm4 = (int)(center + off_x - off_y);  // CCR4 → M4
+    // // 2) 45° 설치된 모터 믹싱 (M1→+x+ y, M2→-x+ y, M3→-x- y, M4→+x- y)
+    // int pwm1 = (int)(center + off_x + off_y);  // CCR1 → M1
+    // int pwm2 = (int)(center - off_x + off_y);  // CCR2 → M2
+    // int pwm3 = (int)(center - off_x - off_y);  // CCR3 → M3
+    // int pwm4 = (int)(center + off_x - off_y);  // CCR4 → M4
 
-    // 3) 클리핑 (0~999)
-    #define CLIP(v)  ((v)<0?0:((v)>999?999:(v)))
-    pwm1 = CLIP(pwm1);
-    pwm2 = CLIP(pwm2);
-    pwm3 = CLIP(pwm3);
-    pwm4 = CLIP(pwm4);
+    // // 3) 클리핑 (0~999)
+    // #define CLIP(v)  ((v)<0?0:((v)>999?999:(v)))
+    // pwm1 = CLIP(pwm1);
+    // pwm2 = CLIP(pwm2);
+    // pwm3 = CLIP(pwm3);
+    // pwm4 = CLIP(pwm4);
 
-    // 4) 타이머에 써주기
-    htim1.Instance->CCR1 = pwm1;
-    htim1.Instance->CCR2 = pwm2;
-    htim1.Instance->CCR3 = pwm3;
-    htim1.Instance->CCR4 = pwm4;
+    // // 4) 타이머에 써주기
+    // htim1.Instance->CCR1 = pwm1;
+    // htim1.Instance->CCR2 = pwm2;
+    // htim1.Instance->CCR3 = pwm3;
+    // htim1.Instance->CCR4 = pwm4;
 
     
     HAL_Delay(50);
