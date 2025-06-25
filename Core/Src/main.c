@@ -53,6 +53,8 @@ uint16_t messageIndex = 0;  // Current position in message
 uint8_t messageComplete = 0;  // Flag indicating complete message
 MPU6050_t MPU6050;
 double current_xvalue = 0;
+double current_yvalue = 0;
+double current_zvalue = 0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,8 +117,13 @@ int main(void)
   {
     MPU6050_Read_All(&hi2c2, &MPU6050);
     current_xvalue = MPU6050.KalmanAngleX;
+    current_yvalue = MPU6050.KalmanAngleY;
     char xvalueStr[32];
-    snprintf(xvalueStr, sizeof(xvalueStr), "X: %.2f\r\n", current_xvalue);
+    int current_xvalInt = (int)current_xvalue;
+    int current_yvalInt = (int)current_yvalue;
+    int current_xvalFrac = (int)(fabs(current_xvalue - current_xvalInt) * 100);
+    int current_yvalFrac = (int)(fabs(current_yvalue - current_yvalInt) * 100);
+    snprintf(xvalueStr, sizeof(xvalueStr), "X: %d.%02d, Y: %d.%02d \r\n", current_xvalInt, current_xvalFrac, current_yvalInt, current_yvalFrac);
     HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
     /* USER CODE END WHILE */
 
