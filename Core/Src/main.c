@@ -138,7 +138,7 @@ int main(void)
     //   messageComplete = 0;
     // }
     
-    HAL_Delay(10);
+    HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
