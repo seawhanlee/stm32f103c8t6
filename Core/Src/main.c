@@ -124,7 +124,7 @@ int main(void)
     int current_xvalInt = (int)current_xvalue;
     int current_yvalInt = (int)current_yvalue + 90;
     int current_xvalFrac = (int)(fabs(current_xvalue - current_xvalInt) * 100);
-    int current_yvalFrac = (int)(fabs(current_yvalue - current_yvalInt) * 100 );
+    int current_yvalFrac = (int)(fabs(current_yvalue - current_yvalInt) * 100);
     snprintf(xvalueStr, sizeof(xvalueStr), "X: %d.%02d, Y: %d.%02d \r\n", current_xvalInt, current_xvalFrac, current_yvalInt, current_yvalFrac);
     HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
     /* USER CODE END WHILE */
