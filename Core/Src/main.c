@@ -38,6 +38,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define MIN_CCR 0
+#define MAX_CCR 499
+#define BASE_CCR 299
 
 /* USER CODE END PD */
 
@@ -56,9 +59,13 @@ uint8_t messageComplete = 0;  // Flag indicating complete message
 MPU6050_t MPU6050;
 double current_xvalue = 0;
 double current_yvalue = 0;
-double current_zvalue = 0;
-double normal_xvalue = 0;
-double normal_yvalue = 0;
+int intitial_check = 0;
+float Kp_roll  = 2.0f;
+
+uint16_t final_m1_ccr;
+uint16_t final_m2_ccr;
+uint16_t final_m3_ccr;
+uint16_t final_m4_ccr;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -69,6 +76,19 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void update_motor_pwm(uint16_t m1_ccr, uint16_t m2_ccr, uint16_t m3_ccr, uint16_t m4_ccr) {
+    // 타이머의 CCR 레지스터에 직접 값을 써서 PWM 듀티 사이클을 변경
+    // HAL 함수를 사용해도 되지만, 레지스터 직접 접근이 더 빠릅니다.
+    TIM1->CCR1 = m1_ccr;
+    TIM1->CCR2 = m2_ccr;
+    TIM1->CCR3 = m3_ccr;
+    TIM1->CCR4 = m4_ccr;
+}
+float constrain(float value, float min, float max) {
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+}
 
 /* USER CODE END 0 */
 
@@ -118,10 +138,25 @@ int main(void)
   while (MPU6050_Init(&hi2c2) == 1);
   char mpuMsg[] = "MPU6050_Init success\r\n";
   HAL_UART_Transmit(&huart2, (uint8_t*)mpuMsg, strlen(mpuMsg), HAL_MAX_DELAY);
-  
-  // Send welcome message
+  HAL_Delay(1000);
+
   char welcomeMsg[] = "UART2 Interrupt Ready!\r\n";
   HAL_UART_Transmit(&huart2, (uint8_t*)welcomeMsg, strlen(welcomeMsg), HAL_MAX_DELAY);
+
+  if (intitial_check == 1) {
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 200);
+  HAL_Delay(2000);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_1, 0);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 200);
+  HAL_Delay(2000);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_2, 0);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 200);
+  HAL_Delay(2000);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_3, 0);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 200);
+  HAL_Delay(2000);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0);
+  }
 
   /* USER CODE END 2 */
 
@@ -142,17 +177,31 @@ int main(void)
     snprintf(xvalueStr, sizeof(xvalueStr), "X: %d.%02d, Y: %d.%02d \r\n", current_xvalInt, current_xvalFrac, current_yvalInt, current_yvalFrac);
     HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
 
-    int normal_xvalue1 = (int)(current_xvalue+90) * 249 / 180; // -90 ~ +90 -> 0 ~ 100
-    int normal_xvalue2 = (int)(fabs(current_xvalue-90)) * 249 / 180;
-    htim1.Instance->CCR4 = normal_xvalue1; // Set PWM duty cycle for channel 4
-    htim1.Instance->CCR3 = normal_xvalue1; // Set PWM duty cycle for channel 3
-    htim1.Instance->CCR2 = normal_xvalue2; // Set PWM duty cycle for channel 2
-    htim1.Instance->CCR1 = normal_xvalue2; // Set PWM duty cycle for channel 1
-    //   htim1.Instance->CCR2 = i;
-    //   htim1.Instance->CCR3 = i;
-    //   htim1.Instance->CCR4 = i;
+    float roll_control_output  = 4.5f * current_xvalue; // Roll 제어 출력
     
-    HAL_Delay(50);
+    // 3. 모터 믹싱 (Mixing) - Pitch 항 제거로 공식이 단순화됨
+    // float형으로 먼저 계산하여 정밀도 유지
+    // 왼쪽 모터 (1, 2)는 속도 감소
+    float motor1_pwm = BASE_CCR - roll_control_output;
+    float motor2_pwm = BASE_CCR - roll_control_output;
+    // 오른쪽 모터 (3, 4)는 속도 증가
+    float motor3_pwm = BASE_CCR + roll_control_output;
+    float motor4_pwm = BASE_CCR + roll_control_output;
+    
+    // 4. PWM 값 범위 제한 (Saturation/Clamping)
+    // 계산된 PWM 값이 설정한 범위를 벗어나지 않도록 함 (매우 중요!)
+    final_m1_ccr = (uint16_t)constrain(motor1_pwm, MIN_CCR, MAX_CCR);
+    final_m2_ccr = (uint16_t)constrain(motor2_pwm, MIN_CCR, MAX_CCR);
+    final_m3_ccr = (uint16_t)constrain(motor3_pwm, MIN_CCR, MAX_CCR);
+    final_m4_ccr = (uint16_t)constrain(motor4_pwm, MIN_CCR, MAX_CCR);
+
+    // 5. 최종 계산된 CCR 값을 모터에 적용
+    TIM1->CCR1 = final_m1_ccr;
+    TIM1->CCR2 = final_m2_ccr;
+    TIM1->CCR3 = final_m3_ccr;
+    TIM1->CCR4 = final_m4_ccr;
+
+    HAL_Delay(10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
