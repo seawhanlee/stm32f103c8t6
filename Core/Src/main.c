@@ -116,7 +116,7 @@ int main(void)
   HAL_UART_Transmit(&huart2, (uint8_t*)initMsg, strlen(initMsg), HAL_MAX_DELAY);
 
   while (MPU6050_Init(&hi2c2) == 1);
-  char mpuMsg[] = "MPU6050 Init success\r\n";
+  char mpuMsg[] = "MPU6050_Init success\r\n";
   HAL_UART_Transmit(&huart2, (uint8_t*)mpuMsg, strlen(mpuMsg), HAL_MAX_DELAY);
   
   // Send welcome message
@@ -131,14 +131,7 @@ int main(void)
   {
     MPU6050_Read_All(&hi2c2, &MPU6050);
     current_xvalue = MPU6050.KalmanAngleX; // MPU6050.KalmanAngleX는 -90에서 +90 사이의 값
-    current_yvalue = MPU6050.KalmanAngleY;
-
-    // x 값이 -90 에서 + 90
-    // x 값 0 에서 999로 정규화
-    // normal_xvalue = current_xvalue * 499 / 180;
-    // y 값이 -90 에서 + 90
-    // y 값 0 에서 999로 정규화
-    // normal_yvalue = current_yvalue * 499 / 180;
+    current_yvalue = MPU6050.KalmanAngleY + 90;
 
     char xvalueStr[64];
     int current_xvalInt = (int)current_xvalue;
@@ -147,34 +140,17 @@ int main(void)
     int current_yvalFrac = (int)(fabs(current_yvalue - current_yvalInt) * 100);
 
     snprintf(xvalueStr, sizeof(xvalueStr), "X: %d.%02d, Y: %d.%02d \r\n", current_xvalInt, current_xvalFrac, current_yvalInt, current_yvalFrac);
-    HAL_UART_Transmit(&huart2, (char*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
 
-
-    // // 1) scale-factor: current_*value ∈ [-90,90] → offset ∈ [-499, +499]
-    // float scale  = 999.0f / 180.0f * 0.5f;
-    // float off_x  = current_xvalue * scale;   // +: 오른쪽, -: 왼쪽
-    // float off_y  = current_yvalue * scale;   // +: 전진,   -: 후진
-    // float center = 999.0f / 2.0f;             // 중립 속도
-
-    // // 2) 45° 설치된 모터 믹싱 (M1→+x+ y, M2→-x+ y, M3→-x- y, M4→+x- y)
-    // int pwm1 = (int)(center + off_x + off_y);  // CCR1 → M1
-    // int pwm2 = (int)(center - off_x + off_y);  // CCR2 → M2
-    // int pwm3 = (int)(center - off_x - off_y);  // CCR3 → M3
-    // int pwm4 = (int)(center + off_x - off_y);  // CCR4 → M4
-
-    // // 3) 클리핑 (0~999)
-    // #define CLIP(v)  ((v)<0?0:((v)>999?999:(v)))
-    // pwm1 = CLIP(pwm1);
-    // pwm2 = CLIP(pwm2);
-    // pwm3 = CLIP(pwm3);
-    // pwm4 = CLIP(pwm4);
-
-    // // 4) 타이머에 써주기
-    // htim1.Instance->CCR1 = 200;
-    // htim1.Instance->CCR2 = pwm2;
-    // htim1.Instance->CCR3 = pwm3;
-    // htim1.Instance->CCR4 = pwm4;
-
+    int normal_xvalue1 = (int)(current_xvalue+90) * 249 / 180; // -90 ~ +90 -> 0 ~ 100
+    int normal_xvalue2 = (int)(fabs(current_xvalue-90)) * 249 / 180;
+    htim1.Instance->CCR4 = normal_xvalue1; // Set PWM duty cycle for channel 4
+    htim1.Instance->CCR3 = normal_xvalue1; // Set PWM duty cycle for channel 3
+    htim1.Instance->CCR2 = normal_xvalue2; // Set PWM duty cycle for channel 2
+    htim1.Instance->CCR1 = normal_xvalue2; // Set PWM duty cycle for channel 1
+    //   htim1.Instance->CCR2 = i;
+    //   htim1.Instance->CCR3 = i;
+    //   htim1.Instance->CCR4 = i;
     
     HAL_Delay(50);
     /* USER CODE END WHILE */
