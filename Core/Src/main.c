@@ -18,11 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "i2c.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "mpu6050.h"
 #include "string.h"
 #include "stdio.h"
 /* USER CODE END Includes */
@@ -49,6 +51,8 @@ uint8_t rxBuffer[1];  // Single character buffer
 uint8_t messageBuffer[MAX_MESSAGE_SIZE];  // Complete message buffer
 uint16_t messageIndex = 0;  // Current position in message
 uint8_t messageComplete = 0;  // Flag indicating complete message
+MPU6050_t MPU6050;
+double current_xvalue = 0.0;  // Variable to hold the current X value from MPU6050
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,10 +96,13 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_USART2_UART_Init();
+  MX_I2C2_Init();
   /* USER CODE BEGIN 2 */
 
   // Start UART reception in interrupt mode (single character)
   HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
+  // while (MPU6050_Init(&hi2c2) == 1);
+
   
   // Send welcome message
   char welcomeMsg[] = "UART2 Interrupt Ready!\r\n";
@@ -107,6 +114,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+    // MPU6050_Read_All(&hi2c2, &MPU6050);
+    // current_xvalue = MPU6050.KalmanAngleX;
+    // HAL_Delay (10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
