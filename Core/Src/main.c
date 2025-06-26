@@ -112,7 +112,12 @@ int main(void)
 
   // Start UART reception in interrupt mode (single character)
   HAL_UART_Receive_IT(&huart2, rxBuffer, 1);
+  char initMsg[] = "HAL_UART_Receive_IT success\r\n";
+  HAL_UART_Transmit(&huart2, (uint8_t*)initMsg, strlen(initMsg), HAL_MAX_DELAY);
+
   while (MPU6050_Init(&hi2c2) == 1);
+  char mpuMsg[] = "MPU6050 Init success\r\n";
+  HAL_UART_Transmit(&huart2, (uint8_t*)mpuMsg, strlen(mpuMsg), HAL_MAX_DELAY);
   
   // Send welcome message
   char welcomeMsg[] = "UART2 Interrupt Ready!\r\n";
@@ -125,8 +130,8 @@ int main(void)
   while (1)
   {
     MPU6050_Read_All(&hi2c2, &MPU6050);
-    current_xvalue = MPU6050.KalmanAngleX;
-    current_yvalue = MPU6050.KalmanAngleY + 90;
+    current_xvalue = MPU6050.KalmanAngleX; // MPU6050.KalmanAngleX는 -90에서 +90 사이의 값
+    current_yvalue = MPU6050.KalmanAngleY;
 
     // x 값이 -90 에서 + 90
     // x 값 0 에서 999로 정규화
@@ -165,7 +170,7 @@ int main(void)
     // pwm4 = CLIP(pwm4);
 
     // // 4) 타이머에 써주기
-    // htim1.Instance->CCR1 = pwm1;
+    // htim1.Instance->CCR1 = 200;
     // htim1.Instance->CCR2 = pwm2;
     // htim1.Instance->CCR3 = pwm3;
     // htim1.Instance->CCR4 = pwm4;
