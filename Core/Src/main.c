@@ -114,9 +114,9 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // MPU6050_Read_All(&hi2c2, &MPU6050);
-    // current_xvalue = MPU6050.KalmanAngleX;
-    // HAL_Delay (10);
+    MPU6050_Read_All(&hi2c2, &MPU6050);
+    current_xvalue = MPU6050.KalmanAngleX;
+    HAL_Delay (10);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
