@@ -76,14 +76,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void update_motor_pwm(uint16_t m1_ccr, uint16_t m2_ccr, uint16_t m3_ccr, uint16_t m4_ccr) {
-    // 타이머의 CCR 레지스터에 직접 값을 써서 PWM 듀티 사이클을 변경
-    // HAL 함수를 사용해도 되지만, 레지스터 직접 접근이 더 빠릅니다.
-    TIM1->CCR1 = m1_ccr;
-    TIM1->CCR2 = m2_ccr;
-    TIM1->CCR3 = m3_ccr;
-    TIM1->CCR4 = m4_ccr;
-}
 float constrain(float value, float min, float max) {
     if (value < min) return min;
     if (value > max) return max;
@@ -165,7 +157,7 @@ int main(void)
   while (1)
   {
     MPU6050_Read_All(&hi2c2, &MPU6050);
-    current_xvalue = MPU6050.KalmanAngleX; // MPU6050.KalmanAngleX는 -90에서 +90 사이의 값
+    current_xvalue = MPU6050.KalmanAngleX;
     current_yvalue = MPU6050.KalmanAngleY + 90;
 
     char xvalueStr[64];
@@ -177,10 +169,9 @@ int main(void)
     snprintf(xvalueStr, sizeof(xvalueStr), "X: %d.%02d, Y: %d.%02d \r\n", current_xvalInt, current_xvalFrac, current_yvalInt, current_yvalFrac);
     HAL_UART_Transmit(&huart2, (uint8_t*)xvalueStr, strlen(xvalueStr), HAL_MAX_DELAY);
 
-    float roll_control_output  = 4.5f * current_xvalue; // Roll 제어 출력
+    float roll_control_output  = 4.5f * current_xvalue; // P 제어 출력
     
-    // 3. 모터 믹싱 (Mixing) - Pitch 항 제거로 공식이 단순화됨
-    // float형으로 먼저 계산하여 정밀도 유지
+    // 3. 모터 믹싱 (Mixing)
     // 왼쪽 모터 (1, 2)는 속도 감소
     float motor1_pwm = BASE_CCR - roll_control_output;
     float motor2_pwm = BASE_CCR - roll_control_output;
@@ -188,8 +179,8 @@ int main(void)
     float motor3_pwm = BASE_CCR + roll_control_output;
     float motor4_pwm = BASE_CCR + roll_control_output;
     
-    // 4. PWM 값 범위 제한 (Saturation/Clamping)
-    // 계산된 PWM 값이 설정한 범위를 벗어나지 않도록 함 (매우 중요!)
+    // 4. PWM 값 범위 제한
+    // 계산된 PWM 값이 설정한 범위를 벗어나지 않도록 함
     final_m1_ccr = (uint16_t)constrain(motor1_pwm, MIN_CCR, MAX_CCR);
     final_m2_ccr = (uint16_t)constrain(motor2_pwm, MIN_CCR, MAX_CCR);
     final_m3_ccr = (uint16_t)constrain(motor3_pwm, MIN_CCR, MAX_CCR);
